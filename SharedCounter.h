@@ -1,3 +1,5 @@
+//  Copyright (c) 2013 Christopher Pugh. All rights reserved.
+
 #ifndef _SHARED_COUNTER_H_INCLUDED
 #define _SHARED_COUNTER_H_INCLUDED
 

@@ -1,3 +1,5 @@
+//  Copyright (c) 2013 Christopher Pugh. All rights reserved.
+
 #ifndef VIRTUOSO_TIMER_H_INCLUDED
 #define VIRTUOSO_TIMER_H_INCLUDED
 
