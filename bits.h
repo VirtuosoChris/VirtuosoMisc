@@ -29,11 +29,18 @@ inline CONSTEXPR bool isPow2();
 
 /// for some value of type INTTYPE return the next power of 2, or the original value if the value is already a power of 2
 template<typename INTTYPE>
-static INTTYPE nextPow2(INTTYPE val);
+INTTYPE nextPow2(INTTYPE val);
 
 /// for some compile time constant VAL of type INTTYPE return the next power of 2, or the original value if the value is already a power of 2
 template<typename INTTYPE, INTTYPE VAL>
-static CONSTEXPR INTTYPE nextPow2();
+CONSTEXPR INTTYPE nextPow2();
+
+/// compile time way of computing the log2 of an integer constant literal.
+/// has static member constant ::result which contains the result of the computation
+/// If the value is not a power of 2, this "rounds up" to the next POT
+template<std::size_t val>
+struct IntLog;
+
 
 /// INTTYPE is type out, SIGNIFICANTBITS is # lower significant bits in input, SPLIT is bits to separate
 /// for example, with an 32 bit INTTYPE, SIGNIFICANTBITS = 7, and SPLIT = 1,
@@ -77,28 +84,28 @@ template <typename INTTYPE>
 inline int findMSB(INTTYPE n)
 {
 #if defined(_MSC_VER)
-    
+
     unsigned long rval;
     _BitScanReverse(&rval, n);
     return rval;
-    
+
 #elif __GNUC__
-    
+
     return sizeof(INTTYPE) * 8 - countLeadingZeroes(n);
-    
+
 #else
-    
-#warning "No compiler specific implementation to fin most significant bit found; using fallback path"
-    
+
+    #warning "No compiler specific implementation to fin most significant bit found; using fallback path"
+
     INTTYPE rval = 0;
-    
+
     while (n >>= 1)
     {
         rval++;
     }
-    
+
     return rval;
-    
+
 #endif
 }
 
@@ -107,18 +114,18 @@ template <typename INTTYPE, INTTYPE n>
 inline CONSTEXPR int findMSB()
 {
 #if defined(_MSC_VER)
-    
+
     unsigned long rval;
     _BitScanReverse(&rval, n);
     return rval;
-    
+
 #elif __GNUC__
-    
+
     return sizeof(INTTYPE) * 8 - countLeadingZeroes(n);
-    
+
 #else
     
-#warning "No compiler specific implementation to fin most significant bit found; using fallback path"
+#warning "No compiler specific implementation to find most significant bit found; using fallback path"
     
     INTTYPE rval = 0;
     
@@ -182,7 +189,7 @@ struct SplitBits
 {
     inline static void loop(INTTYPE& rval)
     {
-        const int shiftAdjusted = SEPARATEBITS * SHIFT;
+        const static INTTYPE shiftAdjusted = SEPARATEBITS * SHIFT;
         
         static const CONSTEXPR INTTYPE magicN = magicNumber<INTTYPE, SHIFT, REPEATS, SEPARATEBITS>();
         
@@ -195,6 +202,34 @@ struct SplitBits
     }
 };
 
+
+
+template <std::size_t VAL, bool REMAINDER,std::size_t counter>
+struct IntLogLoop
+{
+    static const std::size_t NEXTPOT = IntLogLoop<VAL / 2, REMAINDER || VAL%2, counter+1>::NEXTPOT;
+};
+
+
+template <std::size_t counter>
+struct IntLogLoop< 1, true, counter>
+{
+    static const std::size_t NEXTPOT = counter +1;
+};
+
+
+template <std::size_t counter>
+struct IntLogLoop< 1, false, counter>
+{
+    static const std::size_t NEXTPOT = counter;
+};
+
+template<std::size_t val>
+struct IntLog
+{
+    static const std::size_t result = IntLogLoop<val, 0, 0>::NEXTPOT;
+};
+
 template <typename INTTYPE, std::size_t SEPARATEBITS,  std::size_t REPEATS>
 struct SplitBits<INTTYPE, SEPARATEBITS, REPEATS, 0>
 {
@@ -202,6 +237,7 @@ struct SplitBits<INTTYPE, SEPARATEBITS, REPEATS, 0>
     {
     }
 };
+
 
 template<typename INTTYPE, INTTYPE B>
 static CONSTEXPR INTTYPE nextPow2()
@@ -225,13 +261,12 @@ A splitBits(A val)
 #endif
     
     // this algorithm only works correctly on integers with a power of 2 bit depth.  If a non-pot bit depth is passed in, round up to the next pot
-    static CONSTEXPR const A bitDepth = nextPow2<std::size_t, B>();
-    
     A rval = val & ((1<<B)-1); //mask off lower order bits
-    
-    const static CONSTEXPR std::size_t SHIFTLOOP = bitDepth>>1;
-    SplitBits<A, C, 2, SHIFTLOOP>::loop(rval);
-    
+
+    static const std::size_t NEXT_POT = 1 << IntLog<B>::result;
+
+    SplitBits<A, C, 2, NEXT_POT>::loop(rval);
+
     return rval;
 }
 
