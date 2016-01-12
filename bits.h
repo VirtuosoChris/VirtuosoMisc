@@ -131,7 +131,7 @@ inline CONSTEXPR int findMSB()
 
 #else
     
-#warning "No compiler specific implementation to find most significant bit found; using fallback path"
+    #warning "No compiler specific implementation to find most significant bit found; using fallback path"
     
     INTTYPE rval = 0;
     
