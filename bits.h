@@ -51,6 +51,12 @@ struct IntLog;
 template <typename INTTYPE, std::size_t SIGNIFICANTBITS, std::size_t SPLIT>
 INTTYPE splitBits(INTTYPE val);
 
+/// Interleave bits of integer arguments
+///\todo guarantee type safety of all integer args
+/// Use like interleaveBits<int, 8>(1,2)
+template <typename INTTYPE, std::size_t SIGNIFICANTBITS, typename... Args>
+INTTYPE interleaveBits( Args... args);
+
 /********* Implementations ****************/
 
 #ifdef __GNUC__
@@ -271,10 +277,45 @@ A splitBits(A val)
 }
 
 
+template <typename INTTYPE, std::size_t SIGNIFICANTBITS, std::size_t PADDING, INTTYPE SHIFT, typename ...Args>
+inline INTTYPE interleaveBitsLoop(INTTYPE arg)
+{
+    return splitBits<INTTYPE, SIGNIFICANTBITS, PADDING>(arg)<<SHIFT;
+}
+
+
+template <typename INTTYPE, std::size_t SIGNIFICANTBITS, std::size_t PADDING, INTTYPE SHIFT, typename... Args>
+inline INTTYPE interleaveBitsLoop(INTTYPE a, Args... args)
+{
+    return (splitBits<INTTYPE, SIGNIFICANTBITS, PADDING>(a) << SHIFT) | interleaveBitsLoop<INTTYPE, SIGNIFICANTBITS, PADDING, SHIFT+1>(args...);
+}
+
+
+template <typename INTTYPE, std::size_t SIGNIFICANTBITS, typename... Args>
+INTTYPE interleaveBits( Args... args)
+{
+    CONSTEXPR static const std::size_t padding = sizeof...(args)-1;
+    return interleaveBitsLoop<INTTYPE, SIGNIFICANTBITS, padding, 0>(args...);
+}
+
+#ifdef BITS_H_TEST_CASES
+
 #include <iostream>
 
 /// test cases
+
 void mortonTest()
+{
+    std::size_t X = 0x0f;
+    std::size_t Y = 0xf0;
+    
+    std::size_t res = interleaveBits<std::size_t, 8>(X, Y);
+    std::size_t target = 0b1010101001010101;
+    std::cout<<"RES IS "<<res<<" Res should be "<<target<<std::endl;
+}
+
+
+void splitBitsTest()
 {
     std::size_t val = 0xffff;
     
@@ -290,13 +331,6 @@ void mortonTest()
     std::cout<<0b10001000100010001000100010001<<std::endl;
     std::cout<<0b1001001001001001001001001001001001001001001001<<std::endl;
     std::cout<<0b1001001001001001001<<std::endl;
-    
 }
 
-
-int main(int argc, char* argv[])
-{
-    mortonTest();
-
-    return 0;
-}
+#endif
