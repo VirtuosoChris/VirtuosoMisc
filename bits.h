@@ -130,18 +130,18 @@ inline CONSTEXPR int findMSB()
     return sizeof(INTTYPE) * 8 - countLeadingZeroes(n);
 
 #else
-    
+
     #warning "No compiler specific implementation to find most significant bit found; using fallback path"
-    
+
     INTTYPE rval = 0;
-    
+
     while (n >>= 1)
     {
         rval++;
     }
-    
+
     return rval;
-    
+
 #endif
 }
 
@@ -166,7 +166,7 @@ struct MagicNumber
     inline static CONSTEXPR INTTYPE loop()
     {
         const CONSTEXPR INTTYPE mask = maskIn << (bitsSetInPattern + bitsSetInPattern * paddingBits) | (1<<bitsSetInPattern)-1;
-        
+
         return MagicNumber<INTTYPE, bitsSetInPattern, numRepeats, paddingBits, mask, loopCounter+1>::loop();
     }
 };
@@ -196,14 +196,14 @@ struct SplitBits
     inline static void loop(INTTYPE& rval)
     {
         const static INTTYPE shiftAdjusted = SEPARATEBITS * SHIFT;
-        
+
         static const CONSTEXPR INTTYPE magicN = magicNumber<INTTYPE, SHIFT, REPEATS, SEPARATEBITS>();
-        
+
         rval = (rval | (rval << shiftAdjusted)) & magicN;
-        
+
         static const std::size_t nextShift = SHIFT>>1;
         static const std::size_t nextRepeats = REPEATS<<1;
-        
+
         SplitBits<INTTYPE, SEPARATEBITS,nextRepeats, nextShift>::loop(rval);
     }
 };
@@ -246,13 +246,13 @@ struct SplitBits<INTTYPE, SEPARATEBITS, REPEATS, 0>
 
 
 template<typename INTTYPE, INTTYPE B>
-static CONSTEXPR INTTYPE nextPow2()
+CONSTEXPR INTTYPE nextPow2()
 {
     return !isPow2<INTTYPE, B>() ? 1 << (findMSB<INTTYPE, B>()+1) : B;
 }
 
 template<typename INTTYPE>
-static INTTYPE nextPow2(INTTYPE val)
+INTTYPE nextPow2(INTTYPE val)
 {
     return !isPow2<INTTYPE>(val) ? 1 << (findMSB<INTTYPE>(val)+1) : val;
 }
@@ -265,7 +265,7 @@ A splitBits(A val)
 #if __cplusplus >= 201103L
     static_assert((sizeof(A)<<3) >= (B * (C+1)), "Result type does not have sufficient bits to store bitdepth * paddingbits");
 #endif
-    
+
     // this algorithm only works correctly on integers with a power of 2 bit depth.  If a non-pot bit depth is passed in, round up to the next pot
     A rval = val & ((1<<B)-1); //mask off lower order bits
 
@@ -308,7 +308,7 @@ void mortonTest()
 {
     std::size_t X = 0x0f;
     std::size_t Y = 0xf0;
-    
+
     std::size_t res = interleaveBits<std::size_t, 8>(X, Y);
     std::size_t target = 0b1010101001010101;
     std::cout<<"RES IS "<<res<<" Res should be "<<target<<std::endl;
@@ -318,13 +318,13 @@ void mortonTest()
 void splitBitsTest()
 {
     std::size_t val = 0xffff;
-    
+
     std::cout<<splitBits<std::size_t, 8, 1>(val)<<std::endl;
     std::cout<<splitBits<std::size_t, 8, 2>(val)<<std::endl;
     std::cout<<splitBits<std::size_t, 8, 3>(val)<<std::endl;
     std::cout<<splitBits<std::size_t, 16, 2>(val)<<std::endl;
     std::cout<<splitBits<std::size_t, 7, 2>(val)<<std::endl;
-    
+
     std::cout<<"\n\nShould be:"<<std::endl;
     std::cout<<0b101010101010101<<std::endl;
     std::cout<<0b1001001001001001001001<<std::endl;
