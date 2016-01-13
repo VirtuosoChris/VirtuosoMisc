@@ -12,9 +12,6 @@
 
 #include <sstream>
 
-// how easily can we facilitate packing data  ? like 5 5 5 in a 16 bit int
-// we SHOULD do this for our test case.  we really only need 8 bit int for 4, 4.
-
 namespace Virtuoso
 {
     const char* vectorSuffix[4] = {".x",".y",".z",".w"};
@@ -22,7 +19,7 @@ namespace Virtuoso
     
     namespace GLSL
     {
-        /// create magic number for
+        /// create magic number for bit splitting (eg, 1111 -> 01010101, needed for morton code generation)
         std::size_t magicNumber(std::size_t bitsSetInPattern,std::size_t numRepeats, std::size_t paddingBits, std::size_t maskIn, std::size_t loopCounter)
         {
             if (loopCounter == numRepeats )return maskIn;
@@ -50,10 +47,6 @@ namespace Virtuoso
             
             sstr<<typeOut<<" mortonCode("<<type<<" vecIn)\n{\n";
             
-            
-                //sstr <<"\t"<< typeOut <<" "<<splitVariables[i]<<" = vecIn"<<vectorSuffix[i]<<";\n";
-                //sstr <<"\t"<< typeOut <<" "<<splitVariables[i]<<" = vecIn"<<vectorSuffix[i]<<";\n";
-                
             for(int shift = bitdepth>>1 , repeats=2; shift > 0;shift>>=1, repeats<<=1)
             {
                 std::string var = "split";
@@ -62,16 +55,14 @@ namespace Virtuoso
                 if (repeats == 2)
                 {
                     sstr << type<< " ";
-                    var = std::string("vecIn");//+vectorSuffix[i];
+                    var = std::string("vecIn");
                 }
                 
-                
-                //int magicN = 55;
                 std::size_t magicN = magicNumber(shift, repeats, components-1u, 0u,0u);
                 sstr<< "split" <<" = ("<< var <<" | ("<< var<<" << "<<shift * (components-1) << ")) & "<<magicN<<";\n";
             }
             
-            sstr << "\t"<<typeOut <<" rval = ";
+            sstr << "\treturn ";
             
             for (int i =0; i < components; i++)
             {
