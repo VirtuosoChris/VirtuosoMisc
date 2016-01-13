@@ -18,7 +18,7 @@
 namespace Virtuoso
 {
     const char* vectorSuffix[4] = {".x",".y",".z",".w"};
-    const char* splitVariables[4] = {"splitX", "splitY", "splitZ", "splitW"};
+    const char* splitVariables[4] = {"split.x", "split.y", "split.z", "split.w"};
     
     namespace GLSL
     {
@@ -56,22 +56,19 @@ namespace Virtuoso
                 
             for(int shift = bitdepth>>1 , repeats=2; shift > 0;shift>>=1, repeats<<=1)
             {
-                for (int i =0; i < components; i++)
+                std::string var = "split";
+                
+                sstr << "\t";
+                if (repeats == 2)
                 {
-                    std::string var = splitVariables[i];
-                    
-                    sstr << "\t";
-                    if (repeats == 2)
-                    {
-                        sstr << typeOut<< " ";
-                        var = std::string("vecIn")+vectorSuffix[i];
-                    }
-                    
-                    
-                    //int magicN = 55;
-                    std::size_t magicN = magicNumber(shift, repeats, components-1u, 0u,0u);
-                    sstr<< var <<" = ("<< var <<" | ("<< var<<" << "<<shift * (components-1) << ")) & "<<magicN<<";\n";
+                    sstr << type<< " ";
+                    var = std::string("vecIn");//+vectorSuffix[i];
                 }
+                
+                
+                //int magicN = 55;
+                std::size_t magicN = magicNumber(shift, repeats, components-1u, 0u,0u);
+                sstr<< "split" <<" = ("<< var <<" | ("<< var<<" << "<<shift * (components-1) << ")) & "<<magicN<<";\n";
             }
             
             sstr << "\t"<<typeOut <<" rval = ";
