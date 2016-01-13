@@ -35,9 +35,16 @@ namespace Virtuoso
         // Source: Sean Eron Anderson's "Bit Twiddling Hacks" webpage
         int mortonCodeSmallValues(ivec2 vecIn)
         {
-            return ((int64_t(vecIn.x) * 0x0101010101010101ULL & 0x8040201008040201ULL) * 0x0102040810204081ULL >> 49) & 0x5555 |
-            ((int64_t(vecIn.y) * 0x0101010101010101ULL & 0x8040201008040201ULL) * 0x0102040810204081ULL >> 48) & 0xAAAA;
-            
+            const uint64_t a = 0x0101010101010101UL;
+            const uint64_t b = 0x8040201008040201UL;
+            const uint64_t c = 0x0102040810204081UL;
+
+            u64vec2 vecIn2 = u64vec2(vecIn);
+
+            uint64_t result = ((vecIn2.x * a & b) * c >> 49) & 0x5555 |
+            ((vecIn2.y * a & b) * c >> 48) & 0xAAAA;
+
+            return int(result);
         }
         )STRING";
         
