@@ -119,30 +119,7 @@ inline int findMSB(INTTYPE n)
 template <typename INTTYPE, INTTYPE n>
 inline CONSTEXPR int findMSB()
 {
-#if defined(_MSC_VER)
-
-    unsigned long rval;
-    _BitScanReverse(&rval, n);
-    return rval;
-
-#elif __GNUC__
-
-    return sizeof(INTTYPE) * 8 - countLeadingZeroes(n);
-
-#else
-
-    #warning "No compiler specific implementation to find most significant bit found; using fallback path"
-
-    INTTYPE rval = 0;
-
-    while (n >>= 1)
-    {
-        rval++;
-    }
-
-    return rval;
-
-#endif
+    return isPow2<INTTYPE, n>() ? IntLog<n>::result : IntLog<n>::result-1;
 }
 
 
@@ -314,6 +291,13 @@ void mortonTest()
     std::cout<<"RES IS "<<res<<" Res should be "<<target<<std::endl;
 }
 
+
+void MSBTest()
+{
+    std::cout<<findMSB<int, 0b010110>()<<" should be : "<<4<<std::endl;
+    std::cout<<findMSB<unsigned int, 0xffffffff>()<<" should be : "<<31<<std::endl;
+    std::cout<<findMSB<int, 0b100>()<<" should be : "<<2<<std::endl;
+}
 
 void splitBitsTest()
 {
