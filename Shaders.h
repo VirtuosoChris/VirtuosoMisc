@@ -50,16 +50,27 @@ namespace Virtuoso
             
             sstr<<typeOut<<" mortonCode("<<type<<" vecIn)\n{\n";
             
-            for (int i =0; i < components; i++)
-            {
-                sstr <<"\t"<< typeOut <<" "<<splitVariables[i]<<" = vecIn"<<vectorSuffix[i]<<";\n";
+            
+                //sstr <<"\t"<< typeOut <<" "<<splitVariables[i]<<" = vecIn"<<vectorSuffix[i]<<";\n";
+                //sstr <<"\t"<< typeOut <<" "<<splitVariables[i]<<" = vecIn"<<vectorSuffix[i]<<";\n";
                 
-                for(int shift = bitdepth>>1 , repeats=2; shift > 0;shift>>=1, repeats<<=1)
+            for(int shift = bitdepth>>1 , repeats=2; shift > 0;shift>>=1, repeats<<=1)
+            {
+                for (int i =0; i < components; i++)
                 {
+                    std::string var = splitVariables[i];
+                    
+                    sstr << "\t";
+                    if (repeats == 2)
+                    {
+                        sstr << typeOut<< " ";
+                        var = std::string("vecIn")+vectorSuffix[i];
+                    }
+                    
                     
                     //int magicN = 55;
                     std::size_t magicN = magicNumber(shift, repeats, components-1u, 0u,0u);
-                    sstr<<"\t"<< splitVariables[i]<<" = ("<<splitVariables[i]<<" | ("<<splitVariables[i]<<" << "<<shift * (components-1) << ")) & "<<magicN<<";\n";
+                    sstr<< var <<" = ("<< var <<" | ("<< var<<" << "<<shift * (components-1) << ")) & "<<magicN<<";\n";
                 }
             }
             
@@ -95,12 +106,12 @@ namespace Virtuoso
         
         std::string mortonFunction_ivec3(int bits)
         {
-            return mortonFunction("ivec3", "int", 3, 4, bits);
+            return mortonFunction("ivec3", "int", 3, bits);
         }
         
         std::string mortonFunction_ivec2( int bits)
         {
-            return mortonFunction("ivec2", "int", 2, 4, bits);
+            return mortonFunction("ivec2", "int", 2, bits);
         }
     }
 }
