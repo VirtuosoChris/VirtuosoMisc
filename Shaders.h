@@ -28,26 +28,6 @@ namespace Virtuoso
             
             return magicNumber(bitsSetInPattern, numRepeats, paddingBits, mask, loopCounter+1);
         }
-        
-        const std::string mortonFunctionSmall = R"STRING(
-
-        // This function assumes the input contains numbers that fit in a byte, and that the implementation has int64 available
-        // Source: Sean Eron Anderson's "Bit Twiddling Hacks" webpage
-        int mortonCodeSmallValues(ivec2 vecIn)
-        {
-            const uint64_t a = 0x0101010101010101UL;
-            const uint64_t b = 0x8040201008040201UL;
-            const uint64_t c = 0x0102040810204081UL;
-
-            const u64vec2 shift = u64vec2(49, 48);
-            const u64vec2 mask = u64vec2(0x5555, 0xAAAA);
-
-            u64vec2 firstStep = (vecIn * a & b) * c;
-            u64vec2 result = firstStep >> shift & mask;
-
-            return int(result.x | result.y);
-        }
-        )STRING";
 
         std::string mortonFunction(const std::string& type, const std::string& typeOut, int components, int bitdepth)
         {
