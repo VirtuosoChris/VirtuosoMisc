@@ -30,7 +30,7 @@ namespace Virtuoso
         }
         
         const std::string mortonFunctionSmall = R"STRING(
-        
+
         // This function assumes the input contains numbers that fit in a byte, and that the implementation has int64 available
         // Source: Sean Eron Anderson's "Bit Twiddling Hacks" webpage
         int mortonCodeSmallValues(ivec2 vecIn)
@@ -39,15 +39,16 @@ namespace Virtuoso
             const uint64_t b = 0x8040201008040201UL;
             const uint64_t c = 0x0102040810204081UL;
 
-            u64vec2 vecIn2 = u64vec2(vecIn);
+            const u64vec2 shift = u64vec2(49, 48);
+            const u64vec2 mask = u64vec2(0x5555, 0xAAAA);
 
-            uint64_t result = ((vecIn2.x * a & b) * c >> 49) & 0x5555 |
-            ((vecIn2.y * a & b) * c >> 48) & 0xAAAA;
+            u64vec2 firstStep = (vecIn * a & b) * c;
+            u64vec2 result = firstStep >> shift & mask;
 
-            return int(result);
+            return int(result.x | result.y);
         }
         )STRING";
-        
+
         std::string mortonFunction(const std::string& type, const std::string& typeOut, int components, int bitdepth)
         {
             std::stringstream sstr;
