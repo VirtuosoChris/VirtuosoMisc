@@ -4,10 +4,5 @@ project(VirtuosoMisc)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x  ")
   
-
-set(SOURCESTEST
-tests/test1.cpp
-)			
-
-add_executable(MiscTest  ${SOURCESTEST})
- 
+add_executable(MiscTest tests/test1.cpp)
+add_executable(ModTest tests/modtest.cpp) 
